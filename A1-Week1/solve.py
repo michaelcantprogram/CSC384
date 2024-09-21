@@ -45,7 +45,7 @@ def get_path(state):
     curr_state = state
     while curr_state:
         state_path.append(curr_state)
-        curr_state = state.parent
+        curr_state = curr_state.parent
     return state_path[::-1]
 
 
