@@ -41,12 +41,12 @@ def get_path(state):
     :return: The path.
     :rtype: List[State]
     """
-    _path = []
+    state_path = []
     curr_state = state
     while curr_state:
-        _path.append(curr_state)
+        state_path.append(curr_state)
         curr_state = state.parent
-    return _path[::-1]
+    return state_path[::-1]
 
 
 def is_space(curr_board: Board, coor: tuple) -> bool:
