@@ -22,8 +22,13 @@ def is_goal(state):
     :return: True or False
     :rtype: bool
     """
-
-    raise NotImplementedError
+    curr_board = state.board
+    if len(curr_board.boxes) != len(set(curr_board.boxes)):
+        return False
+    for box in curr_board.boxes:
+        if box not in curr_board.storage:
+            return False
+    return True
 
 
 def get_path(state):
@@ -36,8 +41,31 @@ def get_path(state):
     :return: The path.
     :rtype: List[State]
     """
+    _path = []
+    curr_state = state
+    while curr_state:
+        path.append(curr_state)
+        curr_state = state.parent
+    return _path[::-1]
 
-    raise NotImplementedError
+
+def is_space(curr_board: Board, coor: tuple) -> bool:
+    """
+    Check if the given coordinate is not a space.
+
+    :param curr_board: The current board.
+    :type curr_board: Board
+    :param coor: The coordinate to check.
+    :type coor: tuple
+    :return: True if the coordinate is not a space, False otherwise.
+    :rtype: bool
+    """
+    if coor in curr_board.boxes or coor in curr_board.obstacles or coor in curr_board.robots:
+        return False
+    return True
+
+
+
 
 
 def get_successors(state):
@@ -50,8 +78,35 @@ def get_successors(state):
     :return: The list of successor states.
     :rtype: List[State]
     """
-
-    raise NotImplementedError
+    successors = []
+    curr_board = state.board
+    for robot_coor in curr_board.robots:
+        right_move = (robot_coor[0] + 1, robot_coor[1])
+        left_move = (robot_coor[0] - 1, robot_coor[1])
+        up_move = (robot_coor[0], robot_coor[1] - 1)
+        down_move = (robot_coor[0], robot_coor[1] + 1)
+        for move in [right_move, left_move, up_move, down_move]:
+            if is_space(curr_board, move):
+                new_board = Board(curr_board.name, curr_board.width, curr_board.height, curr_board.robots,
+                                  curr_board.boxes, curr_board.storage, curr_board.obstacles)
+                if new_board == curr_board:
+                    print("new board initialization failed")
+                new_board.robots.remove(robot_coor)
+                new_board.robots.append(move)
+                new_state = State(new_board, state.hfn, state.f, state.depth + 1, state)
+                successors.append(new_state)
+            elif move in curr_board.boxes:
+                box_next_move = (move[0] + (move[0] - robot_coor[0]), move[1] + (move[1] - robot_coor[1]))
+                if is_space(curr_board, box_next_move):
+                    new_board = Board(curr_board.name, curr_board.width, curr_board.height, curr_board.robots,
+                                      curr_board.boxes, curr_board.storage, curr_board.obstacles)
+                    new_board.robots.remove(robot_coor)
+                    new_board.robots.append(move)
+                    new_board.boxes.remove(move)
+                    new_board.boxes.append(box_next_move)
+                    new_state = State(new_board, state.hfn, state.f, state.depth + 1, state)
+                    successors.append(new_state)
+    return successors
 
 
 def dfs(init_board):
