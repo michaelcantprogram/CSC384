@@ -65,17 +65,40 @@ def is_space(curr_board: Board, coor: tuple) -> bool:
     return True
 
 
-def copy_board(board: Board) -> Board:
-    """
-    Return a deep copy of the given board.
+# def copy_board(board: Board) -> Board:
+#     """
+#     Return a deep copy of the given board.
+#
+#     :param board: The board to copy.
+#     :type board: Board
+#     :return: The copied board.
+#     :rtype: Board
+#     """
+#     return Board(board.name, board.width, board.height, board.robots[:],
+#                  board.boxes[:], board.storage[:], board.obstacles[:])
 
-    :param board: The board to copy.
-    :type board: Board
-    :return: The copied board.
-    :rtype: Board
+
+def init_new_board(board: Board, robot_remove: tuple, robot_add: tuple,
+                   box_remove=None, box_add=None) -> Board:
     """
-    return Board(board.name, board.width, board.height, board.robots[:],
+    Return a new board with the given changes.
+    :param board: the current board
+    :param robot_remove: the robot to remove
+    :param robot_add: the robot to add
+    :param box_remove: the box to remove, if any
+    :param box_add: the box to add, if any
+    :return: a new board with the given changes
+    """
+    new_board = Board(board.name, board.width, board.height, board.robots[:],
                  board.boxes[:], board.storage[:], board.obstacles[:])
+    new_board.robots.remove(robot_remove)
+    new_board.robots.append(robot_add)
+    if box_remove:
+        new_board.boxes.remove(box_remove)
+    if box_add:
+        new_board.boxes.append(box_add)
+    return new_board
+
 
 
 def get_successors(state):
@@ -97,21 +120,21 @@ def get_successors(state):
         down_move = (robot_coor[0], robot_coor[1] + 1)
         for move in [right_move, left_move, up_move, down_move]:
             if is_space(curr_board, move):
-                new_board = copy_board(curr_board)
-                if new_board == curr_board:
-                    print("new board initialization failed")
-                new_board.robots.remove(robot_coor)
-                new_board.robots.append(move)
+                # new_board = copy_board(curr_board)
+                # new_board.robots.remove(robot_coor)
+                # new_board.robots.append(move)
+                new_board = init_new_board(curr_board, robot_coor, move)
                 new_state = State(new_board, state.hfn, state.f, state.depth + 1, state)
                 successors.append(new_state)
             elif move in curr_board.boxes:
                 box_next_move = (move[0] + (move[0] - robot_coor[0]), move[1] + (move[1] - robot_coor[1]))
                 if is_space(curr_board, box_next_move):
-                    new_board = copy_board(curr_board)
-                    new_board.robots.remove(robot_coor)
-                    new_board.robots.append(move)
-                    new_board.boxes.remove(move)
-                    new_board.boxes.append(box_next_move)
+                    # new_board = copy_board(curr_board)
+                    # new_board.robots.remove(robot_coor)
+                    # new_board.robots.append(move)
+                    # new_board.boxes.remove(move)
+                    # new_board.boxes.append(box_next_move)
+                    new_board = init_new_board(curr_board, robot_coor, move, move, box_next_move)
                     new_state = State(new_board, state.hfn, state.f, state.depth + 1, state)
                     successors.append(new_state)
     return successors
