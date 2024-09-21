@@ -22,13 +22,14 @@ def is_goal(state):
     :return: True or False
     :rtype: bool
     """
-    curr_board = state.board
-    if len(curr_board.boxes) != len(set(curr_board.boxes)):
-        return False
-    for box in curr_board.boxes:
-        if box not in curr_board.storage:
-            return False
-    return True
+    return set(state.board.boxes) == set(state.board.storage)
+    # curr_board = state.board
+    # if len(curr_board.boxes) != len(set(curr_board.boxes)):
+    #     return False
+    # for box in curr_board.boxes:
+    #     if box not in curr_board.storage:
+    #         return False
+    # return True
 
 
 def get_path(state):
@@ -46,7 +47,8 @@ def get_path(state):
     while curr_state:
         state_path.append(curr_state)
         curr_state = curr_state.parent
-    return state_path[::-1]
+    state_path.reverse()
+    return state_path
 
 
 def is_space(curr_board: Board, coor: tuple) -> bool:
@@ -90,7 +92,7 @@ def init_new_board(board: Board, robot_remove: tuple, robot_add: tuple,
     :return: a new board with the given changes
     """
     new_board = Board(board.name, board.width, board.height, board.robots[:],
-                 board.boxes[:], board.storage[:], board.obstacles[:])
+                 board.boxes[:], board.storage, board.obstacles)
     new_board.robots.remove(robot_remove)
     new_board.robots.append(robot_add)
     if box_remove:
@@ -120,20 +122,12 @@ def get_successors(state):
         down_move = (robot_coor[0], robot_coor[1] + 1)
         for move in [right_move, left_move, up_move, down_move]:
             if is_space(curr_board, move):
-                # new_board = copy_board(curr_board)
-                # new_board.robots.remove(robot_coor)
-                # new_board.robots.append(move)
                 new_board = init_new_board(curr_board, robot_coor, move)
                 new_state = State(new_board, state.hfn, state.f, state.depth + 1, state)
                 successors.append(new_state)
             elif move in curr_board.boxes:
                 box_next_move = (move[0] + (move[0] - robot_coor[0]), move[1] + (move[1] - robot_coor[1]))
                 if is_space(curr_board, box_next_move):
-                    # new_board = copy_board(curr_board)
-                    # new_board.robots.remove(robot_coor)
-                    # new_board.robots.append(move)
-                    # new_board.boxes.remove(move)
-                    # new_board.boxes.append(box_next_move)
                     new_board = init_new_board(curr_board, robot_coor, move, move, box_next_move)
                     new_state = State(new_board, state.hfn, state.f, state.depth + 1, state)
                     successors.append(new_state)
@@ -154,8 +148,25 @@ def dfs(init_board):
     :return: (the path to goal state, solution cost)
     :rtype: List[State], int
     """
+    init_state = State(init_board, heuristic_zero(init_board), 0, 0)
+    frontier = [init_state]
+    explored = set()
+    while frontier:
+        curr_state = frontier.pop()  # Use stack behavior for DFS
+        state_board = curr_state.board
+        board_hash = hash(state_board)
+        if board_hash in explored:
+            continue
+        explored.add(board_hash)
+        if is_goal(curr_state):
+            return get_path(curr_state), curr_state.depth
+        successors = get_successors(curr_state)
+        for succ in successors:
+            succ_board_hash = hash(succ.board)
+            if succ_board_hash not in explored:
+                frontier.append(succ)
+    return [], -1
 
-    raise NotImplementedError
 
 
 def a_star(init_board, hfn):
