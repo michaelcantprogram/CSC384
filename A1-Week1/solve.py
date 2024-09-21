@@ -44,7 +44,7 @@ def get_path(state):
     _path = []
     curr_state = state
     while curr_state:
-        path.append(curr_state)
+        _path.append(curr_state)
         curr_state = state.parent
     return _path[::-1]
 
@@ -65,7 +65,17 @@ def is_space(curr_board: Board, coor: tuple) -> bool:
     return True
 
 
+def copy_board(board: Board) -> Board:
+    """
+    Return a deep copy of the given board.
 
+    :param board: The board to copy.
+    :type board: Board
+    :return: The copied board.
+    :rtype: Board
+    """
+    return Board(board.name, board.width, board.height, board.robots[:],
+                 board.boxes[:], board.storage[:], board.obstacles[:])
 
 
 def get_successors(state):
@@ -87,8 +97,7 @@ def get_successors(state):
         down_move = (robot_coor[0], robot_coor[1] + 1)
         for move in [right_move, left_move, up_move, down_move]:
             if is_space(curr_board, move):
-                new_board = Board(curr_board.name, curr_board.width, curr_board.height, curr_board.robots,
-                                  curr_board.boxes, curr_board.storage, curr_board.obstacles)
+                new_board = copy_board(curr_board)
                 if new_board == curr_board:
                     print("new board initialization failed")
                 new_board.robots.remove(robot_coor)
@@ -98,8 +107,7 @@ def get_successors(state):
             elif move in curr_board.boxes:
                 box_next_move = (move[0] + (move[0] - robot_coor[0]), move[1] + (move[1] - robot_coor[1]))
                 if is_space(curr_board, box_next_move):
-                    new_board = Board(curr_board.name, curr_board.width, curr_board.height, curr_board.robots,
-                                      curr_board.boxes, curr_board.storage, curr_board.obstacles)
+                    new_board = copy_board(curr_board)
                     new_board.robots.remove(robot_coor)
                     new_board.robots.append(move)
                     new_board.boxes.remove(move)
