@@ -148,7 +148,7 @@ def dfs(init_board):
     :return: (the path to goal state, solution cost)
     :rtype: List[State], int
     """
-    init_state = State(init_board, heuristic_zero(init_board), 0, 0)
+    init_state = State(init_board, heuristic_zero, 0, 0)
     frontier = [init_state]
     explored = set()
     while frontier:
