@@ -240,8 +240,27 @@ def heuristic_advanced(board):
     :return: The heuristic value.
     :rtype: int
     """
-
-    raise NotImplementedError
+    boxes = board.boxes
+    walls = board.obstacles
+    storages = board.storage
+    for box in boxes:
+        if box in storages:
+            continue
+        box_up = (box[0], box[1] - 1)
+        box_down = (box[0], box[1] + 1)
+        box_left = (box[0] - 1, box[1])
+        box_right = (box[0] + 1, box[1])
+        if box_up in walls or box_down in walls:
+            if box_left in walls:
+                return float('inf')
+            if box_right in walls:
+                return float('inf')
+        if box_left in walls or box_right in walls:
+            if box_up in walls:
+                return float('inf')
+            if box_down in walls:
+                return float('inf')
+    return heuristic_basic(board)
 
 
 def solve_puzzle(board: Board, algorithm: str, hfn):
