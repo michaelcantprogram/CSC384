@@ -185,8 +185,26 @@ def a_star(init_board, hfn):
     :return: (the path to goal state, solution cost)
     :rtype: List[State], int
     """
+    init_state = State(init_board, hfn, 0, 0)
+    frontier = []
+    heapq.heappush(frontier, (init_state.f + init_state.depth, init_state))
+    explored = set()
 
-    raise NotImplementedError
+    while frontier:
+        _, curr_state = heapq.heappop(frontier)
+        state_board = curr_state.board
+        board_hash = hash(state_board)
+        if board_hash not in explored:
+            explored.add(board_hash)
+            if is_goal(curr_state):
+                return get_path(curr_state), curr_state.depth
+            successors = get_successors(curr_state)
+            for succ in successors:
+                sucrr_board_hash = hash(succ.board)
+                if sucrr_board_hash not in explored:
+                    succ.f = succ.depth + succ.hfn(succ.board)
+                    heapq.heappush(frontier, (succ.f, succ))
+    return [], -1
 
 
 def heuristic_basic(board):
@@ -202,8 +220,15 @@ def heuristic_basic(board):
     :return: The heuristic value.
     :rtype: int
     """
-
-    raise NotImplementedError
+    total_distance = 0
+    for box in board.boxes:
+        min_distance = board.height + board.width
+        for storage in board.storage:
+            distance = abs(box[0] - storage[0]) + abs(box[1] - storage[1])
+            if distance < min_distance:
+                min_distance = distance
+        total_distance += min_distance
+    return total_distance
 
 
 def heuristic_advanced(board):
