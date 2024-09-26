@@ -123,7 +123,7 @@ def get_successors(state):
         for move in [right_move, left_move, up_move, down_move]:
             if is_space(curr_board, move):
                 new_board = init_new_board(curr_board, robot_coor, move)
-                new_state = State(new_board, state.hfn, state.f, state.depth + 1, state)
+                new_state = State(new_board, state.hfn, state.depth + 1 + state.hfn(new_board), state.depth + 1, state)
                 successors.append(new_state)
             elif move in curr_board.boxes:
                 box_next_move = (move[0] + (move[0] - robot_coor[0]), move[1] + (move[1] - robot_coor[1]))
@@ -185,9 +185,9 @@ def a_star(init_board, hfn):
     :return: (the path to goal state, solution cost)
     :rtype: List[State], int
     """
-    init_state = State(init_board, hfn, 0, 0)
+    init_state = State(init_board, hfn, hfn(init_board), 0)
     frontier = []
-    heapq.heappush(frontier, (init_state.f + init_state.depth, init_state))
+    heapq.heappush(frontier, (init_state.f, init_state))
     explored = set()
 
     while frontier:
@@ -231,6 +231,54 @@ def heuristic_basic(board):
     return total_distance
 
 
+def check_deadlock(box, walls):
+    box_up = (box[0], box[1] - 1)
+    box_down = (box[0], box[1] + 1)
+    box_left = (box[0] - 1, box[1])
+    box_right = (box[0] + 1, box[1])
+    if box_up in walls or box_down in walls:
+        if box_left in walls or box_right in walls:
+            return True
+    if box_left in walls or box_right in walls:
+        if box_up in walls or box_down in walls:
+            return True
+    return False
+
+
+def check_dead_state(box, storages, n, m):
+    if box[0] == 1:
+        has_storage = False
+        for storage in storages:
+            if storage[0] == 1:
+                has_storage = True
+        if not has_storage:
+            return True
+    if box[0] == n - 2:
+        has_storage = False
+        for storage in storages:
+            if storage[0] == n - 2:
+                has_storage = True
+        if not has_storage:
+            return True
+    if box[1] == 1:
+        has_storage = False
+        for storage in storages:
+            if storage[1] == 1:
+                has_storage = True
+        if not has_storage:
+            return True
+    if box[1] == m:
+        has_storage = False
+        for storage in storages:
+            if storage[1] == m - 2:
+                has_storage = True
+        if not has_storage:
+            return True
+    return False
+
+
+
+
 def heuristic_advanced(board):
     """
     An advanced heuristic of your own choosing and invention.
@@ -246,20 +294,9 @@ def heuristic_advanced(board):
     for box in boxes:
         if box in storages:
             continue
-        box_up = (box[0], box[1] - 1)
-        box_down = (box[0], box[1] + 1)
-        box_left = (box[0] - 1, box[1])
-        box_right = (box[0] + 1, box[1])
-        if box_up in walls or box_down in walls:
-            if box_left in walls:
-                return float('inf')
-            if box_right in walls:
-                return float('inf')
-        if box_left in walls or box_right in walls:
-            if box_up in walls:
-                return float('inf')
-            if box_down in walls:
-                return float('inf')
+        # if check_deadlock(box, walls) or check_dead_state(box, storages, board.width, board.height):
+        if check_deadlock(box, walls):
+            return float('inf')
     return heuristic_basic(board)
 
 
