@@ -21,11 +21,12 @@ def minimax_max_basic(board, curr_player, heuristic_func):
 
     :return the best move and its minimax value according to minimax search.
     """
-    if not board.get_possible_moves(curr_player):
+    possible_moves = board.get_possible_moves(curr_player)
+    if not possible_moves:
         return None, heuristic_func(board, curr_player)
     best_move = None
     best_value = float('-inf')
-    for move in board.get_possible_moves(curr_player):
+    for move in possible_moves:
         new_board = play_move(board, curr_player, move)
         opponent = get_opponent(curr_player)
         _, value = minimax_min_basic(new_board, opponent, heuristic_func)
@@ -48,11 +49,12 @@ def minimax_min_basic(board, curr_player, heuristic_func):
 
     :return the best move and its minimax value according to minimax search.
     """
-    if not board.get_possible_moves(curr_player):
+    possible_moves = board.get_possible_moves(curr_player)
+    if not possible_moves:
         return None, heuristic_func(board, curr_player)
     best_move = None
     best_value = float('inf')
-    for move in board.get_possible_moves(curr_player):
+    for move in possible_moves:
         new_board = play_move(board, curr_player, move)
         opponent = get_opponent(curr_player)
         _, value = minimax_max_basic(new_board, opponent, heuristic_func)
