@@ -26,10 +26,9 @@ def minimax_max_basic(board, curr_player, heuristic_func):
     best_move = None
     best_value = float('-inf')
     for move in board.get_possible_moves(curr_player):
-        curr_board = board.copy()
-        play_move(curr_board, curr_player, move)
+        new_board = play_move(board, curr_player, move)
         opponent = get_opponent(curr_player)
-        _, value = minimax_min_basic(curr_board, opponent, heuristic_func)
+        _, value = minimax_min_basic(new_board, opponent, heuristic_func)
         if value > best_value:
             best_value = value
             best_move = move
@@ -54,10 +53,9 @@ def minimax_min_basic(board, curr_player, heuristic_func):
     best_move = None
     best_value = float('inf')
     for move in board.get_possible_moves(curr_player):
-        curr_board = board.copy()
-        play_move(curr_board, curr_player, move)
+        new_board = play_move(board, curr_player, move)
         opponent = get_opponent(curr_player)
-        _, value = minimax_max_basic(curr_board, opponent, heuristic_func)
+        _, value = minimax_max_basic(new_board, opponent, heuristic_func)
         if value < best_value:
             best_value = value
             best_move = move
