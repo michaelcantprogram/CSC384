@@ -4,6 +4,8 @@
 # CSC 384 Assignment 2 Starter Code
 # version 1.0
 ###############################################################################
+from chess.engine import Opponent
+
 from mancala_game import Board, play_move
 from utils import *
 
@@ -53,8 +55,8 @@ def minimax_min_basic(board, curr_player, heuristic_func):
     possible_moves = board.get_possible_moves(curr_player)
     opponent = get_opponent(curr_player)
     if not possible_moves:
-        stones_opp = sum(board.pockets[opponent])
-        return None, heuristic_func(board, curr_player) - stones_opp
+        stones_player = sum(board.pockets[curr_player])
+        return None, heuristic_func(board, opponent) - stones_player
     best_move = None
     best_value = float('inf')
     for move in possible_moves:
