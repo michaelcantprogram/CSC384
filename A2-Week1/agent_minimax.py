@@ -4,8 +4,6 @@
 # CSC 384 Assignment 2 Starter Code
 # version 1.0
 ###############################################################################
-from chess.engine import Opponent
-
 from mancala_game import Board, play_move
 from utils import *
 
