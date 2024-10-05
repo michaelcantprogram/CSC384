@@ -23,13 +23,6 @@ def is_goal(state):
     :rtype: bool
     """
     return set(state.board.boxes) == set(state.board.storage)
-    # curr_board = state.board
-    # if len(curr_board.boxes) != len(set(curr_board.boxes)):
-    #     return False
-    # for box in curr_board.boxes:
-    #     if box not in curr_board.storage:
-    #         return False
-    # return True
 
 
 def get_path(state):
@@ -53,7 +46,7 @@ def get_path(state):
 
 def is_space(curr_board: Board, coor: tuple) -> bool:
     """
-    Check if the given coordinate is not a space.
+    Helper, check if the given coordinate is not a space.
 
     :param curr_board: The current board.
     :type curr_board: Board
@@ -67,23 +60,11 @@ def is_space(curr_board: Board, coor: tuple) -> bool:
     return True
 
 
-# def copy_board(board: Board) -> Board:
-#     """
-#     Return a deep copy of the given board.
-#
-#     :param board: The board to copy.
-#     :type board: Board
-#     :return: The copied board.
-#     :rtype: Board
-#     """
-#     return Board(board.name, board.width, board.height, board.robots[:],
-#                  board.boxes[:], board.storage[:], board.obstacles[:])
-
-
 def init_new_board(board: Board, robot_remove: tuple, robot_add: tuple,
                    box_remove=None, box_add=None) -> Board:
     """
-    Return a new board with the given changes.
+    Helper, return a new board with the given changes.
+
     :param board: the current board
     :param robot_remove: the robot to remove
     :param robot_add: the robot to add
@@ -100,7 +81,6 @@ def init_new_board(board: Board, robot_remove: tuple, robot_add: tuple,
     if box_add:
         new_board.boxes.append(box_add)
     return new_board
-
 
 
 def get_successors(state):
@@ -123,13 +103,21 @@ def get_successors(state):
         for move in [right_move, left_move, up_move, down_move]:
             if is_space(curr_board, move):
                 new_board = init_new_board(curr_board, robot_coor, move)
-                new_state = State(new_board, state.hfn, state.depth + 1 + state.hfn(new_board), state.depth + 1, state)
+                new_state = State(new_board,
+                                  state.hfn,
+                                  state.depth + 1 + state.hfn(new_board),
+                                  state.depth + 1, state)
                 successors.append(new_state)
             elif move in curr_board.boxes:
-                box_next_move = (move[0] + (move[0] - robot_coor[0]), move[1] + (move[1] - robot_coor[1]))
+                box_next_move = (move[0] + (move[0] - robot_coor[0]),
+                                 move[1] + (move[1] - robot_coor[1]))
                 if is_space(curr_board, box_next_move):
-                    new_board = init_new_board(curr_board, robot_coor, move, move, box_next_move)
-                    new_state = State(new_board, state.hfn, state.f, state.depth + 1, state)
+                    new_board = init_new_board(curr_board,
+                                               robot_coor,
+                                               move, move,
+                                               box_next_move)
+                    new_state = State(new_board, state.hfn,
+                                      state.f, state.depth + 1, state)
                     successors.append(new_state)
     return successors
 
@@ -152,19 +140,17 @@ def dfs(init_board):
     frontier = [init_state]
     explored = set()
     while frontier:
-        curr_state = frontier.pop()  # Use stack behavior for DFS
-        state_board = curr_state.board
-        board_hash = hash(state_board)
+        curr_state = frontier.pop()
+        # state_board = curr_state.board
+        # board_hash = hash(state_board)
+        board_hash = curr_state.id
         if board_hash in explored:
             continue
         explored.add(board_hash)
         if is_goal(curr_state):
             return get_path(curr_state), curr_state.depth
         successors = get_successors(curr_state)
-        for succ in successors:
-            succ_board_hash = hash(succ.board)
-            if succ_board_hash not in explored:
-                frontier.append(succ)
+        frontier.extend(successors)
     return [], -1
 
 
@@ -192,18 +178,17 @@ def a_star(init_board, hfn):
 
     while frontier:
         _, curr_state = heapq.heappop(frontier)
-        state_board = curr_state.board
-        board_hash = hash(state_board)
+        # state_board = curr_state.board
+        # board_hash = hash(state_board)
+        board_hash = curr_state.id
         if board_hash not in explored:
             explored.add(board_hash)
             if is_goal(curr_state):
                 return get_path(curr_state), curr_state.depth
             successors = get_successors(curr_state)
             for succ in successors:
-                sucrr_board_hash = hash(succ.board)
-                if sucrr_board_hash not in explored:
-                    succ.f = succ.depth + succ.hfn(succ.board)
-                    heapq.heappush(frontier, (succ.f, succ))
+                succ.f = succ.depth + succ.hfn(succ.board)
+                heapq.heappush(frontier, (succ.f, succ))
     return [], -1
 
 
@@ -231,7 +216,16 @@ def heuristic_basic(board):
     return total_distance
 
 
-def check_deadlock(box, walls):
+def check_deadlock(box: list, walls: list) -> bool:
+    """
+    Helper, check if the given box is in a deadlock state.
+
+    :param box: The box to check.
+    :type box: list
+    :param walls: The walls on the board.
+    :type walls: list
+    :return: True if the box is in a deadlock state, False otherwise.
+    """
     box_up = (box[0], box[1] - 1)
     box_down = (box[0], box[1] + 1)
     box_left = (box[0] - 1, box[1])
@@ -243,40 +237,6 @@ def check_deadlock(box, walls):
         if box_up in walls or box_down in walls:
             return True
     return False
-
-
-def check_dead_state(box, storages, n, m):
-    if box[0] == 1:
-        has_storage = False
-        for storage in storages:
-            if storage[0] == 1:
-                has_storage = True
-        if not has_storage:
-            return True
-    if box[0] == n - 2:
-        has_storage = False
-        for storage in storages:
-            if storage[0] == n - 2:
-                has_storage = True
-        if not has_storage:
-            return True
-    if box[1] == 1:
-        has_storage = False
-        for storage in storages:
-            if storage[1] == 1:
-                has_storage = True
-        if not has_storage:
-            return True
-    if box[1] == m:
-        has_storage = False
-        for storage in storages:
-            if storage[1] == m - 2:
-                has_storage = True
-        if not has_storage:
-            return True
-    return False
-
-
 
 
 def heuristic_advanced(board):
@@ -294,9 +254,8 @@ def heuristic_advanced(board):
     for box in boxes:
         if box in storages:
             continue
-        # if check_deadlock(box, walls) or check_dead_state(box, storages, board.width, board.height):
         if check_deadlock(box, walls):
-            return float('inf')
+            return math.inf
     return heuristic_basic(board)
 
 
