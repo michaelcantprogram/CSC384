@@ -44,8 +44,9 @@ def heuristic_basic(board, player):
     :param player: the current player.
     :return: an estimated utility of the current board for the current player.
     """
-
-    raise NotImplementedError
+    player_num = player.player
+    opponent_num = get_opponent(player_num)
+    return board.manacalas[player_num] - board.manacalas[opponent_num]
 
 
 def heuristic_advanced(board, player): 
