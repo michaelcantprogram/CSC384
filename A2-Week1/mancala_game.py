@@ -3,7 +3,9 @@
 # Thanks to Daniel Bauer, Columbia University, for a version of Othello that this was based on
 # 
 # CSC 384 Assignment 2
-# version 1.0
+# version 1.1
+#   - Updated AiPlayerInterface.get_move to parse move,value 
+#     as a tuple.
 ##########################################################
 
 import sys
@@ -361,7 +363,13 @@ class AiPlayerInterface(Player):
             raise AiTimeoutError
         timer.cancel()
 
-        return move_s
+        parts = move_s.split(",")
+        move = parts[0]
+        if len(parts) > 1:
+            value = parts[1]
+        else:
+            value = "None"
+        return move, value
     
     def kill(self, manager):
         white_score, dark_score = manager.get_score()
