@@ -7,7 +7,7 @@
 from wrapt_timeout_decorator import timeout
 
 from mancala_game import play_move
-from utils_old import *
+from utils import *
 
 
 def alphabeta_max_basic(board, curr_player, alpha, beta, heuristic_func):
